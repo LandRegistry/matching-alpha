@@ -41,10 +41,20 @@ class MatchingTestCase(unittest.TestCase):
             self.assertEquals(response.status_code, 200)
             self.assertEquals(expected.data, response.data)
 
+    @mock.patch('matching.server._get_user_details_by_lrid', return_value=user)
+    def test_matching_returns_user_details_of_matched_lrid(self, mock_match):
+        with self.app.test_request_context():
+            user_lrid = {}
+            data = json.dumps(user_lrid)
+            response = self.client.post('/get', data=data, content_type='application/json')
+
+            expected = jsonify(user_data)
+            self.assertEquals(response.status_code, 200)
+            self.assertEquals(expected.data, response.data)
+
     @mock.patch('matching.server._match_user', return_value=None)
     def test_if_user_not_matched_return_404(self, mock_match):
         with self.app.test_request_context():
             data = json.dumps(user_data)
             response = self.client.post('/match', data=data, content_type='application/json')
             self.assertEquals(response.status_code, 404)
-
