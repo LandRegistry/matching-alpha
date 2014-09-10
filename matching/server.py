@@ -31,7 +31,6 @@ def match():
     else:
         return Response(json.dumps({"status": "not found"}), status = 404, mimetype='application/json')
 
-
 def _match_user(**kwargs):
     name = kwargs['name']
     date_of_birth = datetime.datetime.strptime(kwargs['date_of_birth'], '%Y-%m-%d')
@@ -40,6 +39,23 @@ def _match_user(**kwargs):
     previous_address = kwargs['previous_address']
 
     user = User.query.filter_by(name=name, gender=gender, current_address=current_address, previous_address=previous_address, date_of_birth=date_of_birth).first()
+
+    current_app.logger.info('Matched user %s' % user)
+    return user
+
+@app.route('/get', methods=['POST'])
+def get_by_lrid():
+    current_app.logger.info("Match requested for %s" % request.get_json())
+    user = _get_user_details_by_lrid(**request.get_json())
+    if user:
+        return jsonify({"name": str(user.name), "gender": user.gender, "current_address": user.current_address, "previous_address": user.previous_address, "date_of_birth": str(user.date_of_birth)})
+    else:
+        return Response(json.dumps({"status": "not found"}), status = 404, mimetype='application/json')
+
+def _get_user_details_by_lrid(**kwargs):
+    lrid = kwargs['lrid']
+
+    user = User.query.filter_by(lrid=lrid).first()
 
     current_app.logger.info('Matched user %s' % user)
     return user
